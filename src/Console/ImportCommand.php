@@ -3,10 +3,10 @@
 namespace TeamTNT\Scout\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Events\Dispatcher;
 use TeamTNT\TNTSearch\TNTSearch;
-use Illuminate\Support\Facades\Schema;
 use TeamTNT\TNTSearch\TNTGeoSearch;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Contracts\Events\Dispatcher;
 
 class ImportCommand extends Command
 {

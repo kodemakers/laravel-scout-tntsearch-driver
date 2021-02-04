@@ -1,11 +1,12 @@
 <?php namespace TeamTNT\Scout;
 
-use TeamTNT\Scout\Console\StatusCommand;
-use TeamTNT\TNTSearch\TNTSearch;
-use Laravel\Scout\EngineManager;
 use Laravel\Scout\Builder;
+use Laravel\Scout\EngineManager;
+use TeamTNT\TNTSearch\TNTSearch;
+use TeamTNT\TNTSearch\TNTGeoSearch;
 use Illuminate\Support\ServiceProvider;
 use TeamTNT\Scout\Console\ImportCommand;
+use TeamTNT\Scout\Console\StatusCommand;
 use TeamTNT\Scout\Engines\TNTSearchEngine;
 
 class TNTSearchScoutServiceProvider extends ServiceProvider
