@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Events\Dispatcher;
 use TeamTNT\TNTSearch\TNTSearch;
 use Illuminate\Support\Facades\Schema;
+use TeamTNT\TNTSearch\TNTGeoSearch;
 
 class ImportCommand extends Command
 {
@@ -66,6 +67,23 @@ class ImportCommand extends Command
         $indexer->query($query->toSql());
 
         $indexer->run();
+
+        if (!empty($config['geoIndex'])) {
+            $geotnt = new TNTGeoSearch();
+
+            $geotnt->loadConfig($config);
+            $geotnt->setDatabaseHandle($db->getPdo());
+
+            $geoIndexer = $geotnt->getIndex();
+            $geoIndexer->loadConfig($geotnt->config);
+            $geoIndexer->createIndex($model->searchableAs().'.geoindex');
+            $geoIndexer->setPrimaryKey($model->getKeyName());
+
+            $geoIndexer->query($query->toSql());
+
+            $geoIndexer->run();
+        }
+
         $this->info('All ['.$class.'] records have been imported.');
     }
 }

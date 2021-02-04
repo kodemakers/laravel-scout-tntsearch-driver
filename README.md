@@ -71,13 +71,17 @@ In your `config/scout.php` add:
     ],
     'asYouType' => false,
     'searchBoolean' => env('TNTSEARCH_BOOLEAN', false),
+    'geoIndex' => env('TNTSEARCH_GEOINDEX', false),
     'maxDocs' => env('TNTSEARCH_MAX_DOCS', 500),
 ],
 ```
 To prevent your search indexes being commited to your project repository,
 add the following line to your `.gitignore` file.
 
-```/storage/*.index```
+```
+/storage/*.index
+/storage/*.geoindex
+```
 
 The `asYouType` option can be set per model basis, see the example below.
 
