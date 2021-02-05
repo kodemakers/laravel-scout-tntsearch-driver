@@ -26,7 +26,7 @@ class TNTSearchEngine extends Engine
      */
     protected $builder;
 
-     /**
+    /**
      * @var TNTGeoSearch
      */
     protected $geotnt;
@@ -235,13 +235,11 @@ class TNTSearchEngine extends Engine
             $res = $this->tnt->searchBoolean($builder->query, $limit);
             event(new SearchPerformed($builder, $res, true));
             return $res;
-
         } else {
             $res = $this->tnt->search($builder->query, $limit);
             event(new SearchPerformed($builder, $res));
             return $res;
         }
-        
     }
 
     /**
@@ -267,7 +265,8 @@ class TNTSearchEngine extends Engine
         }
 
         $models = $builder->whereIn(
-            $model->getQualifiedKeyName(), $keys
+            $model->getQualifiedKeyName(),
+            $keys
         )->get()->keyBy($model->getKeyName());
 
         // sort models by user choice
@@ -332,13 +331,13 @@ class TNTSearchEngine extends Engine
     {
         $indexName = $model->searchableAs();
 
-        if (!file_exists($this->tnt->config['storage']."/{$indexName}.index")) {
+        if (!file_exists($this->tnt->config['storage'] . "/{$indexName}.index")) {
             $indexer = $this->tnt->createIndex("$indexName.index");
             $indexer->setDatabaseHandle($model->getConnection()->getPdo());
             $indexer->setPrimaryKey($model->getKeyName());
         }
 
-        if ($this->geotnt && !file_exists($this->tnt->config['storage']."/{$indexName}.geoindex")) {
+        if ($this->geotnt && !file_exists($this->tnt->config['storage'] . "/{$indexName}.geoindex")) {
             $indexer = $this->geotnt->getIndex();
             $indexer->loadConfig($this->geotnt->config);
             $indexer->createIndex("$indexName.geoindex");
@@ -365,22 +364,20 @@ class TNTSearchEngine extends Engine
     private function discardIdsFromResultSetByConstraints($builder, $searchResults)
     {
         $qualifiedKeyName    = $builder->model->getQualifiedKeyName(); // tableName.id
-        $subQualifiedKeyName = 'sub.'.$builder->model->getKeyName(); // sub.id
 
         $sub = $this->getBuilder($builder->model)->whereIn(
-            $qualifiedKeyName, $searchResults
-        ); // sub query for left join
+            $qualifiedKeyName,
+            $searchResults
+        ); // sub query for from
 
-        $discardIds = $builder->model->newQuery()
+        $sub = $builder->model->newQuery()
             ->select($qualifiedKeyName)
-            ->leftJoin(DB::raw('('.$sub->getQuery()->toSql().') as '.$builder->model->getConnection()->getTablePrefix().'sub'), $subQualifiedKeyName, '=', $qualifiedKeyName)
-            ->addBinding($sub->getQuery()->getBindings(), 'join')
-            ->whereIn($qualifiedKeyName, $searchResults)
-            ->whereNull($subQualifiedKeyName)
-            ->pluck($builder->model->getKeyName());
+            ->fromSub($sub, $builder->model->getTable());
 
-        // returns values of $results['ids'] that are not part of $discardIds
-        return collect($searchResults)->diff($discardIds);
+        $searchResults = $sub->pluck($builder->model->getKeyName());
+
+        // returns id after condition and order by if there is
+        return $searchResults;
     }
 
     /**
@@ -482,13 +479,13 @@ class TNTSearchEngine extends Engine
     public function flush($model)
     {
         $indexName   = $model->searchableAs();
-        $pathToIndex = $this->tnt->config['storage']."/{$indexName}.index";
+        $pathToIndex = $this->tnt->config['storage'] . "/{$indexName}.index";
         if (file_exists($pathToIndex)) {
             unlink($pathToIndex);
         }
 
-        if ($this->geotnt){
-            $pathToGeoIndex = $this->geotnt->config['storage']."/{$indexName}.geoindex";
+        if ($this->geotnt) {
+            $pathToGeoIndex = $this->geotnt->config['storage'] . "/{$indexName}.geoindex";
             if (file_exists($pathToGeoIndex)) {
                 unlink($pathToGeoIndex);
             }
