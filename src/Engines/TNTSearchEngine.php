@@ -361,23 +361,26 @@ class TNTSearchEngine extends Engine
      * matching results are looked up and removed, instead of returning a collection with
      * all the valid results.
      */
-    private function discardIdsFromResultSetByConstraints($builder, $searchResults)
+    private function discardIdsFromResultSetByConstraints($builder, $ids)
     {
         $qualifiedKeyName    = $builder->model->getQualifiedKeyName(); // tableName.id
 
         $sub = $this->getBuilder($builder->model)->whereIn(
             $qualifiedKeyName,
-            $searchResults
+            $ids
         ); // sub query for from
-
-        $sub = $builder->model->newQuery()
+        
+        $models = $builder->model->newQuery()
             ->select($qualifiedKeyName)
             ->fromSub($sub, $builder->model->getTable());
+        
+        if (!empty($sub->getQuery()->orders)) {
+            return $models->get()->pluck($builder->model->getKeyName());
+        }
 
-        $searchResults = $sub->pluck($builder->model->getKeyName());
-
-        // returns id after condition and order by if there is
-        return $searchResults;
+        return $models->pluck($builder->model->getKeyName())->sortby(function($value) use ($ids){
+            return array_search($value, $ids);
+        });
     }
 
     /**
