@@ -375,7 +375,7 @@ class TNTSearchEngine extends Engine
             ->fromSub($sub, $builder->model->getTable());
         
         if (!empty($sub->getQuery()->orders)) {
-            return $models->get()->pluck($builder->model->getKeyName());
+            return $models->pluck($builder->model->getKeyName());
         }
 
         return $models->pluck($builder->model->getKeyName())->sortby(function($value) use ($ids){
